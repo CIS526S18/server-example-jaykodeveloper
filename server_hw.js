@@ -1,65 +1,79 @@
-'use strict';
-// declare variables
-var fs = require('fs');
-var http = require('http');
-var url = require('url');
-var PORT = 8080;
+"use strict";
+const PORT = 8080;
+const http = require('http');
+const fs = require('fs');
+const url = require('url');
+const path = require('path');
+/**
+ * @function serverFile
+ * Serves the specified file with the provided response object
+ * @param {string} path - specifies the file path to read
+ * @param {http.serverResponse} res - the http response object
+ */
+function serverFile(path, res){
+    //async method
+    fs.readFile(path, function(err, data){
+        if(err) {
+             console.error(err);
+             res.statusCode = 500;
+             res.end("Server error: Could not read file");
+             return;
+        }
+        //at this point, there is no error
+        res.end(data);
+    });
+}
 
-function serveIndex(path, res){
-    fs.readdir(path, function(err, files){
+function serveDirectory(aPath, res){
+    fs.readdir(aPath, function(err, files){
         if(err){
             console.error(err);
             res.statusCode = 500;
             res.end("Server Error: ");
         }
-        var html = "<p> Index of " + path + "</p>";
+        var html = "<p> Index of " + aPath+ "</p>";
         html += "<ul>";
         html += files.map(function(item){
-            return "<li><a href='"+ item +"'>" + item + "</a></li>";
+            return "<li><a href='"+item+"'>" + item + "</a></li>";
         }).join("");
         html += "</ul>";
         res.end(html);
-    });    
+    });  
 }
-
-function goToPath(path, res){
-    fs.readFile(path, 'utf-8', function(err, data){
+/**
+ * @function handleRequest 
+ * Request handler for our http server
+ * @param {http.ClientRequest} req - the http requeset object
+ * @param {http.ServerResponse} res - the http response object
+ */
+function handleRequest(req, res){
+    /*console.log(req.url);
+    var path = "public" + req.url;*/
+    var temp = url.parse(req.url, true).pathname;
+    var aPath = 'public'+temp;
+    fs.stat(aPath, (err, stats) =>{
         if(err){
             console.error(err);
             res.statusCode = 500;
-            res.end("Server error: Could not read file");
+            res.end("fs.stat error");
             return;
         }
-        res.end(data);
-    });
-} //function goToPath
-
-function handleRequest(req, res){
-    var resource = url.parse(req.url).pathname;
-
-    switch(resource){
-        //index
-        case '/': 
-            serveIndex('public',res);
-
-            break;
-        case '/public/openhouse.html':
-            goToPath(resource,res);
-            break;
-        case '/openhouse.css':
-            goToPath(resource,res);
-            break;
-        case '/openhouse.js':
-            goToPath(resource,res);
-            break;
-        default:
-            res.statusCode = 404;
-            res.end("File not found");
-           
-            
-    } // switch
+        if(stats.isDirectory()){
+            //serveDirectory('public', res);
+            //serveDirectory('public'+req.url+'/', res);
+            serveDirectory('public'+temp+'/', res);
+            //serveDirectory(aPath, res);
+        }
+        if(stats.isFile()){
+            serverFile(aPath, res);
+            //serverFile('public/'+req.url, res);
+        }
+    })
 } // function handleRequest
 
-var server = http.createServer(handleRequest).listen(PORT, function(){
-    console.log("Server is on "+ PORT);
-})
+//create the web server
+var server = http.createServer(handleRequest);
+// start listening on port 80
+server.listen(PORT, function(){
+    console.log("Listening on port "+PORT);
+});

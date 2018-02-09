@@ -1,6 +1,6 @@
 "use strict";
 
-const PORT = 8080;
+// const PORT =7000;
 
 //Import the HTTP library
 const http = require('http');
@@ -80,53 +80,17 @@ function handleRequest(req, res){
             serveIndex('public', res);
             break;
         case '/openhouse.html':
-            // cache method
-            //res.end(cache['openhouse.html']);
-
-            //async method
-            /*fs.readFile('public/openhouse.html', function(err, data){
-                if(err) {
-                     console.error(err);
-                     res.statusCode = 500;
-                     res.end("Server error");
-                     return;
-                }
-                //at this point, there is no error
-                res.end(data);
-            });*/
+           
             serverFile('public/openhouse.html', res);
             
             break;
         case '/openhouse.css':
-            //res.end(cache['openhouse.css']);
-            //async method
-            /*fs.readFile('public/openhouse.css', function(err, data){
-                if(err) {
-                     console.error(err);
-                     res.statusCode = 500;
-                     res.end("Server error");
-                     return;
-                }
-                //at this point, there is no error
-                res.end(data);
-            });*/
+            
             serverFile('public/openhouse.css', res);
             
             break;
         case '/openhouse.js':
-            //res.end(cache['openhouse.js']);
-
-            //async method
-            /*fs.readFile('public/openhouse.js', function(err, data){
-                if(err) {
-                     console.error(err);
-                     res.statusCode = 500;
-                     res.end("Server error");
-                     return;
-                }
-                //at this point, there is no error
-                res.end(data);
-            });*/
+           
             serverFile('public/openhouse.js', res);
             break;
         default:
