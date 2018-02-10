@@ -3,7 +3,7 @@ const PORT = 8080;
 const http = require('http');
 const fs = require('fs');
 const url = require('url');
-const path = require('path');
+const PATH = require('path');
 /**
  * @function serverFile
  * Serves the specified file with the provided response object
@@ -12,7 +12,7 @@ const path = require('path');
  */
 function serverFile(path, res){
     //async method
-    fs.readFile(path, function(err, data){
+    fs.readFile(PATH.join('public',path), function(err, data){
         if(err) {
              console.error(err);
              res.statusCode = 500;
@@ -25,20 +25,28 @@ function serverFile(path, res){
 }
 
 function serveDirectory(aPath, res){
-    fs.readdir(aPath, function(err, files){
-        if(err){
-            console.error(err);
-            res.statusCode = 500;
-            res.end("Server Error: ");
-        }
-        var html = "<p> Index of " + aPath+ "</p>";
-        html += "<ul>";
-        html += files.map(function(item){
-            return "<li><a href='"+item+"'>" + item + "</a></li>";
-        }).join("");
-        html += "</ul>";
-        res.end(html);
-    });  
+  
+  fs.readFile(PATH.join('public',aPath,"index.html"), (err, data) =>{
+      if(err){
+        fs.readdir(PATH.join('public',aPath), function(err, files){
+                if(err){
+                    console.error(err);
+                    res.statusCode = 500;
+                    res.end("Server Error: ");
+                    return;
+                }
+                var html = "<p> Index of " + aPath+ "</p>";
+                html += "<ul>";
+                html += files.map(function(item){
+                    return "<li><a href='"+PATH.join(aPath,item)+"'>" + item + "</a></li>";
+                }).join("");
+                html += "</ul>";
+                res.end(html);
+            });
+            return;
+      } // if(err)
+      res.end(data);
+ }) //readFile
 }
 /**
  * @function handleRequest 
@@ -54,18 +62,18 @@ function handleRequest(req, res){
     fs.stat(aPath, (err, stats) =>{
         if(err){
             console.error(err);
-            res.statusCode = 500;
+            res.statusCode =404;
             res.end("fs.stat error");
             return;
         }
         if(stats.isDirectory()){
             //serveDirectory('public', res);
             //serveDirectory('public'+req.url+'/', res);
-            serveDirectory('public'+temp+'/', res);
+            serveDirectory(temp, res);
             //serveDirectory(aPath, res);
         }
         if(stats.isFile()){
-            serverFile(aPath, res);
+            serverFile(temp, res);
             //serverFile('public/'+req.url, res);
         }
     })
