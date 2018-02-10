@@ -67,21 +67,16 @@ function handleRequest(req, res){
             return;
         }
         if(stats.isDirectory()){
-            //serveDirectory('public', res);
-            //serveDirectory('public'+req.url+'/', res);
             serveDirectory(temp, res);
-            //serveDirectory(aPath, res);
         }
         if(stats.isFile()){
             serverFile(temp, res);
-            //serverFile('public/'+req.url, res);
         }
     })
 } // function handleRequest
 
 //create the web server
 var server = http.createServer(handleRequest);
-// start listening on port 80
 server.listen(PORT, function(){
     console.log("Listening on port "+PORT);
 });
